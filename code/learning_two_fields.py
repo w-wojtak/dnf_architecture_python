@@ -39,11 +39,22 @@ tau_h = 20
 h_0 = 0
 
 input_flag = True
-input_shape = [3, 1.5]
-input_position = [-60, -30, 0, 30, 60]
-input_onset_time = [3, 8, 12, 16, 20]
-input_duration = [1, 1, 1, 1, 1]
-input_pars = [input_shape, input_position, input_onset_time, input_duration]
+input_shape = [3, 1.5]   # same for both
+input_duration = [1, 1, 1, 1, 1]  # same for both
+
+# Positions for input set 1 (some overlap with set 2)
+input_position_1 = [-60, -30, 0, 30, 60]
+input_onset_time_1 = [3, 8, 12, 16, 20]
+
+# Positions for input set 2 (some overlap with set 1)
+input_position_2 = [-50, -30, 10, 35, 65]
+input_onset_time_2 = [5, 10, 14, 18, 23]
+
+# Pack parameters for each input set
+input_pars_1 = [input_shape, input_position_1,
+                input_onset_time_1, input_duration]
+input_pars_2 = [input_shape, input_position_2,
+                input_onset_time_2, input_duration]
 
 save_video = False  # Set to True to save video of the simulation
 plot_every = 5    # update plot every 100 time steps
@@ -57,7 +68,8 @@ plot_delay = 0.05   # delay (in seconds) before each plot update
 x = np.arange(-x_lim, x_lim + dx, dx)
 t = np.arange(0, t_lim + dt, dt)
 
-inputs = get_inputs(x, t, dt, input_pars, input_flag)
+inputs_1 = get_inputs(x, t, dt, input_pars_1, input_flag)
+inputs_2 = get_inputs(x, t, dt, input_pars_2, input_flag)
 
 u_field = h_0 * np.ones_like(x)
 h_u = h_0 * np.ones_like(x)
@@ -75,7 +87,7 @@ plt.ion()
 fig, ax = plt.subplots(figsize=(8, 4))
 
 line1, = ax.plot(x, u_field, label='Field activity u(x)')
-line2, = ax.plot(x, inputs[0, :], label='Input')
+line2, = ax.plot(x, inputs_1[0, :], label='Input')
 
 ax.set_ylim(-2, 10)
 ax.set_xlabel("x")
@@ -99,13 +111,13 @@ for i in range(len(t)):
     f_hat = np.fft.fft(f)
     conv = dx * np.fft.ifftshift(np.real(np.fft.ifft(f_hat * w_hat)))
     h_u += dt / tau_h * f
-    u_field += dt * (-u_field + conv + inputs[i, :] + h_u)
+    u_field += dt * (-u_field + conv + inputs_1[i, :] + h_u)
     history_u[i, :] = u_field
 
     # Update plot every plot_every steps or at last step
     if i % plot_every == 0 or i == len(t) - 1:
         line1.set_ydata(u_field)
-        line2.set_ydata(inputs[i, :])
+        line2.set_ydata(inputs_1[i, :])
         ax.set_title(f"Time = {t[i]:.2f}")
         fig.canvas.draw()
         fig.canvas.flush_events()
