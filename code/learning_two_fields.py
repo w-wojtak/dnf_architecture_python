@@ -71,12 +71,16 @@ t = np.arange(0, t_lim + dt, dt)
 inputs_1 = get_inputs(x, t, dt, input_pars_1, input_flag)
 inputs_2 = get_inputs(x, t, dt, input_pars_2, input_flag)
 
-u_field = h_0 * np.ones_like(x)
-h_u = h_0 * np.ones_like(x)
+u_field_1 = h_0 * np.ones_like(x)
+u_field_2 = h_0 * np.ones_like(x)
+
+h_u_1 = h_0 * np.ones_like(x)
+h_u_2 = h_0 * np.ones_like(x)
 
 w_hat = np.fft.fft(kernel_osc(x, *kernel_pars))
 
-history_u = np.zeros((len(t), len(x)))
+history_u_1 = np.zeros((len(t), len(x)))
+history_u_2 = np.zeros((len(t), len(x)))
 
 
 # ====================================
@@ -86,7 +90,7 @@ history_u = np.zeros((len(t), len(x)))
 plt.ion()
 fig, ax = plt.subplots(figsize=(8, 4))
 
-line1, = ax.plot(x, u_field, label='Field activity u(x)')
+line1, = ax.plot(x, u_field_1, label='Field activity u(x)')
 line2, = ax.plot(x, inputs_1[0, :], label='Input')
 
 ax.set_ylim(-2, 10)
@@ -107,16 +111,16 @@ if save_video:
 # ====================================
 
 for i in range(len(t)):
-    f = np.heaviside(u_field - theta, 1)
-    f_hat = np.fft.fft(f)
-    conv = dx * np.fft.ifftshift(np.real(np.fft.ifft(f_hat * w_hat)))
-    h_u += dt / tau_h * f
-    u_field += dt * (-u_field + conv + inputs_1[i, :] + h_u)
-    history_u[i, :] = u_field
+    f_1 = np.heaviside(u_field_1 - theta, 1)
+    f_hat_1 = np.fft.fft(f_1)
+    conv_1 = dx * np.fft.ifftshift(np.real(np.fft.ifft(f_hat_1 * w_hat)))
+    h_u_1 += dt / tau_h * f_1
+    u_field_1 += dt * (-u_field_1 + conv_1 + inputs_1[i, :] + h_u_1)
+    history_u_1[i, :] = u_field_1
 
     # Update plot every plot_every steps or at last step
     if i % plot_every == 0 or i == len(t) - 1:
-        line1.set_ydata(u_field)
+        line1.set_ydata(u_field_1)
         line2.set_ydata(inputs_1[i, :])
         ax.set_title(f"Time = {t[i]:.2f}")
         fig.canvas.draw()
