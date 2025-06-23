@@ -3,6 +3,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 # requires ffmpeg installed on your system
 from matplotlib.animation import FFMpegWriter
+from datetime import datetime
+import os
 
 
 def kernel_osc(x, a, b, alpha):
@@ -152,6 +154,27 @@ for i in range(len(t)):
 
         if save_video:
             writer.grab_frame()
+
+# ====================================
+# --------- Save Final Fields --------
+# ====================================
+
+# Create data folder if it doesn't exist
+os.makedirs("data", exist_ok=True)
+
+# Get current date and time
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+# Define file paths
+file_path_1 = f"data/u_field_1_{timestamp}.npy"
+file_path_2 = f"data/u_field_2_{timestamp}.npy"
+
+# Save final field states
+np.save(file_path_1, u_field_1)
+np.save(file_path_2, u_field_2)
+
+print(f"Saved u_field_1 to {file_path_1}")
+print(f"Saved u_field_2 to {file_path_2}")
 
 if save_video:
     writer.finish()
