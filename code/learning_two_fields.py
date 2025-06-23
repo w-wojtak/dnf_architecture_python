@@ -1,3 +1,4 @@
+# pylint: disable=C0200
 import numpy as np
 import matplotlib.pyplot as plt
 # requires ffmpeg installed on your system
@@ -88,16 +89,24 @@ history_u_2 = np.zeros((len(t), len(x)))
 # ====================================
 
 plt.ion()
-fig, ax = plt.subplots(figsize=(8, 4))
+fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)  # 2 rows, 1 col
 
-line1, = ax.plot(x, u_field_1, label='Field activity u(x)')
-line2, = ax.plot(x, inputs_1[0, :], label='Input')
+# First subplot: field 1
+line1_field, = axs[0].plot(x, u_field_1, label='Field activity u_field_1(x)')
+line1_input, = axs[0].plot(x, inputs_1[0, :], label='Input 1')
+axs[0].set_ylim(-2, 10)
+axs[0].set_ylabel("Activity")
+axs[0].legend()
+axs[0].set_title("Field 1 - Time = 0")
 
-ax.set_ylim(-2, 10)
-ax.set_xlabel("x")
-ax.set_ylabel("activity")
-ax.legend()
-ax.set_title("Time = 0")
+# Second subplot: field 2
+line2_field, = axs[1].plot(x, u_field_2, label='Field activity u_field_2(x)')
+line2_input, = axs[1].plot(x, inputs_2[0, :], label='Input 2')
+axs[1].set_ylim(-2, 10)
+axs[1].set_xlabel("x")
+axs[1].set_ylabel("Activity")
+axs[1].legend()
+axs[1].set_title("Field 2 - Time = 0")
 
 # Video writer setup
 if save_video:
@@ -118,14 +127,27 @@ for i in range(len(t)):
     u_field_1 += dt * (-u_field_1 + conv_1 + inputs_1[i, :] + h_u_1)
     history_u_1[i, :] = u_field_1
 
+    f_2 = np.heaviside(u_field_2 - theta, 1)
+    f_hat_2 = np.fft.fft(f_2)
+    conv_2 = dx * np.fft.ifftshift(np.real(np.fft.ifft(f_hat_2 * w_hat)))
+    h_u_2 += dt / tau_h * f_2
+    u_field_2 += dt * (-u_field_2 + conv_2 + inputs_2[i, :] + h_u_2)
+    history_u_2[i, :] = u_field_2
+
     # Update plot every plot_every steps or at last step
     if i % plot_every == 0 or i == len(t) - 1:
-        line1.set_ydata(u_field_1)
-        line2.set_ydata(inputs_1[i, :])
-        ax.set_title(f"Time = {t[i]:.2f}")
+        # Update field 1
+        line1_field.set_ydata(u_field_1)
+        line1_input.set_ydata(inputs_1[i, :])
+        axs[0].set_title(f"Field 1 - Time = {t[i]:.2f}")
+
+        # Update field 2
+        line2_field.set_ydata(u_field_2)
+        line2_input.set_ydata(inputs_2[i, :])
+        axs[1].set_title(f"Field 2 - Time = {t[i]:.2f}")
+
         fig.canvas.draw()
         fig.canvas.flush_events()
-        # Pause to create delay before next update
         plt.pause(plot_delay)
 
         if save_video:
