@@ -43,11 +43,11 @@ input_flag = True
 input_shape = [3, 1.5]   # same for both
 input_duration = [1, 1, 1, 1, 1]  # same for both
 
-# Positions for input set 1 (some overlap with set 2)
+# Positions for input set 1
 input_position_1 = [-60, -30, 0, 30, 60]
 input_onset_time_1 = [3, 8, 12, 16, 20]
 
-# Positions for input set 2 (some overlap with set 1)
+# Positions for input set 2
 input_position_2 = [-50, -30, 10, 35, 65]
 input_onset_time_2 = [5, 10, 14, 18, 23]
 
@@ -58,7 +58,7 @@ input_pars_2 = [input_shape, input_position_2,
                 input_onset_time_2, input_duration]
 
 save_video = False  # Set to True to save video of the simulation
-plot_every = 5    # update plot every 100 time steps
+plot_every = 5    # update plot every x time steps
 plot_delay = 0.05   # delay (in seconds) before each plot update
 
 
@@ -89,7 +89,7 @@ history_u_2 = np.zeros((len(t), len(x)))
 # ====================================
 
 plt.ion()
-fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)  # 2 rows, 1 col
+fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)  # rows, col
 
 # First subplot: field 1
 line1_field, = axs[0].plot(x, u_field_1, label='Field activity u_field_1(x)')
