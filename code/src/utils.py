@@ -8,6 +8,22 @@ def kernel_osc(x, a, b, alpha):
     return a * (np.exp(-b * abs(x)) * (b * np.sin(abs(alpha * x)) + np.cos(alpha * x)))
 
 
+def kernel_gauss(x, a_ex, s_ex, w_in):
+    """
+    Computes a Gaussian kernel minus inhibition.
+
+    Parameters:
+    - x (np.ndarray): Spatial positions.
+    - a_ex (float): Amplitude of excitation.
+    - s_ex (float): Width (standard deviation) of excitation.
+    - w_in (float): Global inhibition strength.
+
+    Returns:
+    - np.ndarray: Kernel values.
+    """
+    return a_ex * np.exp(-0.5 * x**2 / s_ex**2) - w_in
+
+
 def get_inputs(x, t, dt, input_pars, input_flag):
     if not input_flag:
         return np.zeros((len(t), len(x)))
