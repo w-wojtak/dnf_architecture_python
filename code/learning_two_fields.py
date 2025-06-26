@@ -41,7 +41,7 @@ input_position_1 = [-60, -30, 0, 30, 60]
 input_onset_time_1 = [3, 8, 12, 16, 20]
 
 # Positions for input set 2
-input_position_2 = [-50, -30, 10, 35, 65]
+input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
 input_onset_time_2 = [5, 10, 14, 18, 23]
 
 # Pack parameters for each input set
@@ -123,7 +123,7 @@ if save_video:
 # --------- Simulation loop ----------
 # ====================================
 
-time_counter = 0.0
+# time_counter = 0.0
 
 for i in range(len(t)):
 
@@ -155,7 +155,7 @@ for i in range(len(t)):
     u_d += dt * (-u_d + conv_d + input_d + h_u_d)
     history_u_d[i, :] = u_d
 
-    time_counter += dt
+    # time_counter += dt
 
     # Update plot every plot_every steps or at last step
     if plot_fields and (i % plot_every == 0 or i == len(t) - 1):
