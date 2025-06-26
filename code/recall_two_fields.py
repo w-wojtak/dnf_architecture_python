@@ -37,8 +37,16 @@ from pathlib import Path
 # plt.tight_layout()
 # plt.show()
 
+fig = axs = line1_field = line1_input = line2_field = line2_input = line1_ud = None
+line3_field = line4_field = None
+
+
 trial_number = 1
 
+plot_fields = True
+
+plot_every = 5    # update plot every x time steps
+plot_delay = 0.05   # delay (in seconds) before each plot update
 
 # ====================================
 # --------- Parameters ---------------
@@ -56,14 +64,7 @@ theta = 1
 
 # x = np.linspace(-x_lim, x_lim, 200)
 x = np.arange(-x_lim, x_lim + dx, dx)
-
-# Compute kernels
-kernel_act = kernel_gauss(x, *kernel_pars_act)
-kernel_sim = kernel_gauss(x, *kernel_pars_sim)
-
-# Compute FFTs
-w_hat_act = np.fft.fft(kernel_act)
-w_hat_sim = np.fft.fft(kernel_sim)
+t = np.arange(0, t_lim + dt, dt)
 
 # # Plot kernels
 # plt.figure(figsize=(10, 4))
@@ -103,6 +104,39 @@ u_d = np.load(file3)
 # plt.tight_layout()
 # plt.show()
 
+# ====================================
+# --------- Inputs -------------------
+# ====================================
+
+
+input_flag = True
+input_shape = [3, 1.5]   # same for both
+input_duration = [2, 2, 2, 2, 2]  # same for both
+
+# Positions for input set 1
+input_position_1 = [-60, -30, 0, 30, 60]
+input_onset_time_1 = [3, 8, 12, 16, 20]
+
+# Positions for input set 2
+input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
+input_onset_time_2 = [5, 10, 14, 20, 26]
+
+# Pack parameters for each input set
+input_pars_1 = [input_shape, input_position_1,
+                input_onset_time_1, input_duration]
+input_pars_2 = [input_shape, input_position_2,
+                input_onset_time_2, input_duration]
+
+
+inputs_1 = get_inputs(x, t, dt, input_pars_1, input_flag)
+inputs_2 = get_inputs(x, t, dt, input_pars_2, input_flag)
+
+input_agent_robot_feedback = np.zeros((len(t), len(x)))
+
+
+# ====================================
+# --------- Initialization -----------
+# ====================================
 
 # load fields from files to initialize
 
@@ -112,12 +146,13 @@ try:
     h_d_initial = max(u_d)
 
     if trial_number == 1:
-        # Use u_field_2 for u_act
-        u_act = u_field_1.flatten() - h_d_initial + 1.5
+        # Use u_field_1 for u_act
+        # u_act = u_field_1.flatten() - h_d_initial + 1.5
+        u_act = u_field_1 - h_d_initial + 1.5
         input_action_onset = u_field_1.flatten()
         h_u_act = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
-        # Use u_field_1 for u_sim
+        # Use u_field_2 for u_sim
         u_sim = u_field_2.flatten() - h_d_initial + 1.5
         input_action_onset_2 = u_field_2.flatten()
         h_u_sim = -h_d_initial * np.ones(np.shape(x)) + 1.5
@@ -134,7 +169,280 @@ try:
         input_action_onset = u_field_1.flatten() + latest_h_amem
         h_u_act = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
+        # Use u_field_2 for u_sim (CHECK!!!!)
+        u_sim = u_field_2.flatten() - h_d_initial + 1.5
+        input_action_onset_2 = u_field_2.flatten()
+        h_u_sim = -h_d_initial * np.ones(np.shape(x)) + 1.5
+
 except FileNotFoundError:
     print("No previous sequence memory found, initializing with default values.")
     u_act = np.zeros(np.shape(x))
     h_u_act = -3.2 * np.ones(np.shape(x))
+
+
+# initialize all fields
+
+# Working memory parameters
+h_0_wm = -1.0
+theta_wm = 0.8
+
+# kernel_pars_wm = (1.75, 0.5, 0.8)
+
+
+# kernel_sim = kernel_gauss(x, *kernel_pars_sim)
+
+u_wm = h_0_wm * np.ones(np.shape(x))
+h_u_wm = h_0_wm * np.ones(np.shape(x))
+
+# Action onset parameters
+tau_h_act = 20
+theta_act = 1.5
+
+tau_h_sim = 10
+theta_sim = 1.5
+
+theta_error = 1.5
+
+# kernel_pars_act = (1.5, 0.8, 0.0)
+# w_hat_act = np.fft.fft(kernel_gauss(*kernel_pars_act))
+
+# kernel_pars_sim = (1.7, 0.8, 0.7)
+# w_hat_sim = np.fft.fft(kernel_gauss(*kernel_pars_sim))
+
+
+# Compute kernels
+kernel_act = kernel_gauss(x, *kernel_pars_act)
+kernel_sim = kernel_gauss(x, *kernel_pars_sim)
+kernel_wm = kernel_osc(x, *kernel_pars_wm)
+
+# Compute FFTs
+w_hat_act = np.fft.fft(kernel_act)
+w_hat_sim = np.fft.fft(kernel_sim)
+w_hat_wm = np.fft.fft(kernel_wm)
+
+# Feedback fields
+h_f = -1.0
+w_hat_f = w_hat_act
+
+tau_h_f = tau_h_act
+theta_f = theta_act
+
+u_f1 = h_f * np.ones(np.shape(x))
+u_f2 = h_f * np.ones(np.shape(x))
+u_error = h_f * np.ones(np.shape(x))
+
+# Field histories
+u_act_history = []  # Lists to store values at each time step
+u_sim_history = []
+u_wm_history = []
+u_f1_history = []
+u_f2_history = []
+u_error_history = []
+
+# Adaptation memory field
+h_u_amem = np.zeros(np.shape(x))
+beta_adapt = 0.01
+
+
+if plot_fields:
+    plt.ion()
+    fig, axs = plt.subplots(2, 2, figsize=(14, 10), sharex=True)
+
+    # --- Top-left: u_act ---
+    line1_field, = axs[0, 0].plot(x, u_act, label='u_act(x)')
+    axs[0, 0].set_ylim(-5, 5)
+    axs[0, 0].set_ylabel("Activity")
+    axs[0, 0].legend()
+    axs[0, 0].set_title("Field u_act - Time = 0")
+
+    # --- Top-right: u_sim ---
+    line2_field, = axs[0, 1].plot(x, u_sim, label='u_sim(x)')
+    axs[0, 1].set_ylim(-5, 5)
+    axs[0, 1].legend()
+    axs[0, 1].set_title("Field u_sim - Time = 0")
+
+    # --- Bottom-left: u_f1 ---
+    line3_field, = axs[1, 0].plot(x, u_f1, label='u_f1(x)')
+    axs[1, 0].set_ylim(-5, 5)
+    axs[1, 0].set_xlabel("x")
+    axs[1, 0].set_ylabel("Activity")
+    axs[1, 0].legend()
+    axs[1, 0].set_title("Field u_f1 - Time = 0")
+
+    # --- Bottom-right: u_f2 ---
+    line4_field, = axs[1, 1].plot(x, u_f2, label='u_f2(x)')
+    axs[1, 1].set_ylim(-5, 5)
+    axs[1, 1].set_xlabel("x")
+    axs[1, 1].legend()
+    axs[1, 1].set_title("Field u_f2 - Time = 0")
+
+    # Optional: adjust layout
+    plt.tight_layout()
+
+
+input_positions = input_position_1
+input_indices = [np.argmin(np.abs(x - pos)) for pos in input_positions]
+threshold_crossed = {pos: False for pos in input_positions}
+
+active_gaussian_inputs = {}  # position -> (start_i, duration)
+
+gaussian_amplitude = 3
+gaussian_width = 1.5
+input_duration_timesteps = 10
+
+
+def gaussian_input(x, center, amplitude, width):
+    return amplitude * np.exp(-0.5 * ((x - center) / width) ** 2)
+
+
+# MAIN LOOP
+for i in range(len(t)):
+
+    input_agent_2 = inputs_2[i, :]
+    # input_agent_2 = inputs_2[i, :]
+    # --- Generate Gaussian input field ---
+    # input_agent_robot_feedback = np.zeros_like(x)
+
+    # todo: inputs
+    # n = len(latest_input_slice) // 3
+
+    # # Split the received data back into two matrices
+    # input_agent1 = latest_input_slice[:n]
+    # input_agent2 = latest_input_slice[n:2*n]
+
+    # input_agent_robot_feedback = latest_input_slice[2*n:]
+
+    f_f1 = np.heaviside(u_f1 - theta_f, 1)
+    f_hat_f1 = np.fft.fft(f_f1)
+    conv_f1 = dx * \
+        np.fft.ifftshift(np.real(np.fft.ifft(f_hat_f1 * w_hat_f)))
+
+    f_f2 = np.heaviside(u_f2 - theta_f, 1)
+    f_hat_f2 = np.fft.fft(f_f2)
+    conv_f2 = dx * \
+        np.fft.ifftshift(np.real(np.fft.ifft(f_hat_f2 * w_hat_f)))
+
+    f_act = np.heaviside(u_act - theta_act, 1)
+    f_hat_act = np.fft.fft(f_act)
+    conv_act = dx * \
+        np.fft.ifftshift(np.real(np.fft.ifft(f_hat_act * w_hat_act)))
+
+    f_sim = np.heaviside(u_sim - theta_sim, 1)
+    f_hat_sim = np.fft.fft(f_sim)
+    conv_sim = dx * \
+        np.fft.ifftshift(np.real(np.fft.ifft(f_hat_sim * w_hat_sim)))
+
+    f_wm = np.heaviside(u_wm - theta_wm, 1)
+    f_hat_wm = np.fft.fft(f_wm)
+    conv_wm = dx * \
+        np.fft.ifftshift(np.real(np.fft.ifft(f_hat_wm * w_hat_wm)))
+
+    f_error = np.heaviside(u_error - theta_error, 1)
+    f_hat_error = np.fft.fft(f_error)
+    conv_error = dx * \
+        np.fft.ifftshift(
+            np.real(np.fft.ifft(f_hat_error * w_hat_act)))
+
+    # Update field states
+    h_u_act += dt / tau_h_act
+    h_u_sim += dt / tau_h_sim
+
+    u_act += dt * (-u_act + conv_act + input_action_onset +
+                   h_u_act - 6.0 * f_wm * conv_wm)
+
+    u_sim += dt * (-u_sim + conv_sim + input_action_onset_2 +
+                   h_u_sim - 6.0 * f_wm * conv_wm)
+
+    u_wm += dt * (-u_wm + conv_wm +
+                  6 * ((f_f1 * u_f1) * (f_f2 * u_f2)) + h_u_wm)
+
+    u_f1 += dt * (-u_f1 + conv_f1 + input_agent_robot_feedback[i, :] +
+                  h_f - 1 * f_wm * conv_wm)
+
+    u_f2 += dt * (-u_f2 + conv_f2 + input_agent_2 +
+                  h_f - 1 * f_wm * conv_wm)
+
+    u_error += dt * (-u_error + conv_error +
+                     h_f - 2 * f_sim * conv_sim)
+
+    h_u_amem += beta_adapt * (1 - (f_f2 * f_f1)) * (f_f1 - f_f2)
+
+    # # List of input positions where we previously applied inputs
+    # input_positions = [-40, 0, 40]
+
+    # # Convert `input_positions` to indices in `x`
+    # input_indices = [np.argmin(np.abs(x - pos)) for pos in input_positions]
+
+    # Store the values at the specified positions in history arrays
+    u_act_values_at_positions = [u_act[idx] for idx in input_indices]
+    u_act_history.append(u_act_values_at_positions)
+
+    u_sim_values_at_positions = [u_sim[idx] for idx in input_indices]
+    u_sim_history.append(u_sim_values_at_positions)
+
+    u_wm_values_at_positions = [u_wm[idx] for idx in input_indices]
+    u_wm_history.append(u_wm_values_at_positions)
+
+    u_f1_values_at_positions = [u_f1[idx] for idx in input_indices]
+    u_f1_history.append(u_f1_values_at_positions)
+
+    u_f2_values_at_positions = [u_f2[idx] for idx in input_indices]
+    u_f2_history.append(u_f2_values_at_positions)
+
+    # --- Detect threshold crossing ---
+    for idx, pos in zip(input_indices, input_positions):
+        if not threshold_crossed[pos] and u_act[idx] > theta_act:
+            print(f"Threshold crossed at position {pos}")
+            threshold_crossed[pos] = True
+
+            time_on = i
+            time_off = i + 50  # 10 time steps duration
+            gaussian = gaussian_amplitude * \
+                np.exp(-((x - pos) ** 2) / (2 * gaussian_width ** 2))
+            input_agent_robot_feedback[time_on:time_off, :] += gaussian
+            # print(
+            #     f"Max of input_agent_robot_feedback: {max(input_agent_robot_feedback[i, :])}")
+
+    # Update plot every plot_every steps or at last step
+    if plot_fields and (i % plot_every == 0 or i == len(t) - 1):
+        line1_field.set_ydata(u_act)
+        line2_field.set_ydata(u_sim)
+        line3_field.set_ydata(u_f1)
+        line4_field.set_ydata(u_f2)
+
+        # Update titles with current time if desired
+        axs[0, 0].set_title(f"Field u_act - Time = {i}")
+        axs[0, 1].set_title(f"Field u_sim - Time = {i}")
+        axs[1, 0].set_title(f"Field u_f1 - Time = {i}")
+        axs[1, 1].set_title(f"Field u_f2 - Time = {i}")
+
+        plt.pause(0.1)
+
+        # # Update field 1
+        # line1_field.set_ydata(u_act)
+        # # line1_input.set_ydata(inputs_1[i, :])
+        # # line1_ud.set_ydata(u_d)  # <-- update u_d line
+        # axs[0].set_title(f"Field 1 - Time = {t[i]:.2f}")
+
+        # # Update field 2
+        # line2_field.set_ydata(u_sim)
+        # # line2_input.set_ydata(inputs_2[i, :])
+        # axs[1].set_title(f"Field 2 - Time = {t[i]:.2f}")
+
+        # fig.canvas.draw()
+        # fig.canvas.flush_events()
+        # plt.pause(plot_delay)
+
+        # if save_video:
+        #     writer.grab_frame()
+
+
+plt.figure(figsize=(10, 4))
+plt.plot(x, u_act, label='wm')
+# plt.plot(x, u_act, label='act', linestyle='--')
+plt.xlabel('x')
+plt.ylabel(' value')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
