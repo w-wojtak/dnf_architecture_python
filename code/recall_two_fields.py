@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 from src.utils import *
 from pathlib import Path
+import sys
 
 # Load most recent files
 # data_dir = Path(__file__).resolve().parents[1] / "data"
@@ -41,7 +42,8 @@ fig = axs = line1_field = line1_input = line2_field = line2_input = line1_ud = N
 line3_field = line4_field = None
 
 
-trial_number = 1
+# Default to trial 1 if not provided
+trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
 plot_fields = True
 
