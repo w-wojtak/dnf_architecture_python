@@ -21,7 +21,7 @@ fig = axs = line1_field = line1_input = line2_field = line2_input = line1_ud = N
 kernel_pars = [1, 0.7, 0.9]
 
 x_lim, t_lim = 80, 50
-dx, dt = 0.05, 0.05
+dx, dt = 0.1, 0.1
 theta = 1
 
 tau_h = 20

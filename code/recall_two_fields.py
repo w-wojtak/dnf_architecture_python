@@ -58,8 +58,8 @@ kernel_pars_wm = [1.75, 0.5, 0.8]  # ok
 kernel_pars_f = [1.5, 0.8, 0.0]  # same as in act
 kernel_pars_error = [1.5, 0.8, 0.0]  # same as in act
 
-x_lim, t_lim = 80, 100
-dx, dt = 0.05, 0.05
+x_lim, t_lim = 80, 50
+dx, dt = 0.1, 0.1
 theta = 1
 
 # x = np.linspace(-x_lim, x_lim, 200)
@@ -119,7 +119,7 @@ input_onset_time_1 = [3, 8, 12, 16, 20]
 
 # Positions for input set 2
 input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
-input_onset_time_2 = [5, 10, 14, 20, 26]
+input_onset_time_2 = [5, 10, 14, 20, 24]
 
 # Pack parameters for each input set
 input_pars_1 = [input_shape, input_position_1,
@@ -392,7 +392,7 @@ for i in range(len(t)):
     # --- Detect threshold crossing ---
     for idx, pos in zip(input_indices, input_positions):
         if not threshold_crossed[pos] and u_act[idx] > theta_act:
-            print(f"Threshold crossed at position {pos}")
+            print(f"Threshold crossed at position {pos} and time {i*dt}")
             threshold_crossed[pos] = True
 
             time_on = i
@@ -438,7 +438,7 @@ for i in range(len(t)):
 
 
 plt.figure(figsize=(10, 4))
-plt.plot(x, u_act, label='wm')
+plt.plot(x, h_u_amem, label='hamem')
 # plt.plot(x, u_act, label='act', linestyle='--')
 plt.xlabel('x')
 plt.ylabel(' value')
