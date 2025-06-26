@@ -459,3 +459,42 @@ plt.legend()
 plt.grid(True)
 plt.tight_layout()
 plt.show()
+
+
+# Convert history lists to NumPy arrays
+u_act_history = np.array(u_act_history)
+u_sim_history = np.array(u_sim_history)
+u_wm_history = np.array(u_wm_history)
+u_f1_history = np.array(u_f1_history)
+u_f2_history = np.array(u_f2_history)
+
+timesteps = np.arange(len(u_act_history))
+
+# Set up figure with 5 subplots
+fig, axs = plt.subplots(5, 1, figsize=(10, 14), sharex=True)
+
+field_histories = [
+    (u_act_history, 'u_act'),
+    (u_sim_history, 'u_sim'),
+    (u_wm_history, 'u_wm'),
+    (u_f1_history, 'u_f1'),
+    (u_f2_history, 'u_f2'),
+]
+
+for ax, (field_hist, name) in zip(axs, field_histories):
+    for pos_idx in range(field_hist.shape[1]):
+        ax.plot(timesteps, field_hist[:, pos_idx],
+                label=f'x = {input_positions[pos_idx]}')
+    ax.set_ylabel(name)
+    # Custom y-limits
+    if name == 'u_wm':
+        ax.set_ylim(-2, 15)
+    else:
+        ax.set_ylim(-2, 5)
+    ax.legend()
+    ax.grid(True)
+
+axs[-1].set_xlabel('Time step')
+fig.suptitle('Field values at input positions over time')
+plt.tight_layout()
+plt.show()
