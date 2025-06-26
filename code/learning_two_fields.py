@@ -5,21 +5,32 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 from datetime import datetime
 import os
-from src.utils import kernel_osc, get_inputs
+from src.utils import *
 
 
 # ====================================
 # --------- Parameters ---------------
 # ====================================
 
+
+plot_fields = False
+save_video = False  # Set to True to save video of the simulation
+# Predefine to avoid linter warnings
+fig = axs = line1_field = line1_input = line2_field = line2_input = line1_ud = None
+
 kernel_pars = [1, 0.7, 0.9]
 
-x_lim, t_lim = 80, 100
+x_lim, t_lim = 80, 50
 dx, dt = 0.05, 0.05
 theta = 1
 
 tau_h = 20
 h_0 = 0
+
+h_0_d = 0
+tau_h_d = 20
+theta_d = 1.5
+# kernel_pars_d = [1, 0.7, 0.9]  # SAME as kernel_pars
 
 input_flag = True
 input_shape = [3, 1.5]   # same for both
@@ -39,7 +50,7 @@ input_pars_1 = [input_shape, input_position_1,
 input_pars_2 = [input_shape, input_position_2,
                 input_onset_time_2, input_duration]
 
-save_video = False  # Set to True to save video of the simulation
+
 plot_every = 5    # update plot every x time steps
 plot_delay = 0.05   # delay (in seconds) before each plot update
 
@@ -60,35 +71,46 @@ u_field_2 = h_0 * np.ones_like(x)
 h_u_1 = h_0 * np.ones_like(x)
 h_u_2 = h_0 * np.ones_like(x)
 
+u_d = h_0_d * np.ones_like(x)
+h_u_d = h_0_d * np.ones_like(x)
+
 w_hat = np.fft.fft(kernel_osc(x, *kernel_pars))
 
 history_u_1 = np.zeros((len(t), len(x)))
 history_u_2 = np.zeros((len(t), len(x)))
-
+# u_d_history = []  # List to store values at each time step
+history_u_d = np.zeros((len(t), len(x)))
 
 # ====================================
 # --------- Plot setup ---------------
 # ====================================
 
-plt.ion()
-fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)  # rows, col
+if plot_fields:
+    plt.ion()
+    fig, axs = plt.subplots(2, 1, figsize=(8, 8), sharex=True)  # rows, col
 
-# First subplot: field 1
-line1_field, = axs[0].plot(x, u_field_1, label='Field activity u_field_1(x)')
-line1_input, = axs[0].plot(x, inputs_1[0, :], label='Input 1')
-axs[0].set_ylim(-2, 10)
-axs[0].set_ylabel("Activity")
-axs[0].legend()
-axs[0].set_title("Field 1 - Time = 0")
+    # First subplot: field 1 + u_d
+    line1_field, = axs[0].plot(
+        x, u_field_1, label='Field activity u_field_1(x)')
+    line1_input, = axs[0].plot(x, inputs_1[0, :], label='Input 1')
+    line1_ud, = axs[0].plot(
+        x, u_d, label='Task duration field u_d(x)', linestyle='--')
 
-# Second subplot: field 2
-line2_field, = axs[1].plot(x, u_field_2, label='Field activity u_field_2(x)')
-line2_input, = axs[1].plot(x, inputs_2[0, :], label='Input 2')
-axs[1].set_ylim(-2, 10)
-axs[1].set_xlabel("x")
-axs[1].set_ylabel("Activity")
-axs[1].legend()
-axs[1].set_title("Field 2 - Time = 0")
+    axs[0].set_ylim(-2, 10)
+    axs[0].set_ylabel("Activity")
+    axs[0].legend()
+    axs[0].set_title("Field 1 - Time = 0")
+
+    # Second subplot: field 2
+    line2_field, = axs[1].plot(
+        x, u_field_2, label='Field activity u_field_2(x)')
+    line2_input, = axs[1].plot(x, inputs_2[0, :], label='Input 2')
+    axs[1].set_ylim(-2, 10)
+    axs[1].set_xlabel("x")
+    axs[1].set_ylabel("Activity")
+    axs[1].legend()
+    axs[1].set_title("Field 2 - Time = 0")
+
 
 # Video writer setup
 if save_video:
@@ -101,7 +123,17 @@ if save_video:
 # --------- Simulation loop ----------
 # ====================================
 
+time_counter = 0.0
+
 for i in range(len(t)):
+
+    # Input at time t=0 for the task duration field
+    # if 0.0 <= time_counter < 1.0:
+    if 0 <= i < 1/dt:
+        input_d = 3.0 * np.exp(-((x - 0) ** 2) / (2 * 1.5 ** 2))
+    else:
+        input_d = 0.0
+
     f_1 = np.heaviside(u_field_1 - theta, 1)
     f_hat_1 = np.fft.fft(f_1)
     conv_1 = dx * np.fft.ifftshift(np.real(np.fft.ifft(f_hat_1 * w_hat)))
@@ -116,11 +148,21 @@ for i in range(len(t)):
     u_field_2 += dt * (-u_field_2 + conv_2 + inputs_2[i, :] + h_u_2)
     history_u_2[i, :] = u_field_2
 
+    f_d = np.heaviside(u_d - theta, 1)
+    f_hat_d = np.fft.fft(f_d)
+    conv_d = dx * np.fft.ifftshift(np.real(np.fft.ifft(f_hat_d * w_hat)))
+    h_u_d += dt / tau_h_d * f_d
+    u_d += dt * (-u_d + conv_d + input_d + h_u_d)
+    history_u_d[i, :] = u_d
+
+    time_counter += dt
+
     # Update plot every plot_every steps or at last step
-    if i % plot_every == 0 or i == len(t) - 1:
+    if plot_fields and (i % plot_every == 0 or i == len(t) - 1):
         # Update field 1
         line1_field.set_ydata(u_field_1)
         line1_input.set_ydata(inputs_1[i, :])
+        line1_ud.set_ydata(u_d)  # <-- update u_d line
         axs[0].set_title(f"Field 1 - Time = {t[i]:.2f}")
 
         # Update field 2
@@ -135,6 +177,11 @@ for i in range(len(t)):
         if save_video:
             writer.grab_frame()
 
+
+print(f"Max of u_sm1: {max(u_field_1)}")
+print(f"Max of u_sm2: {max(u_field_2)}")
+print(f"Max of u_d: {max(u_d)}")
+
 # ====================================
 # --------- Save Final Fields --------
 # ====================================
@@ -148,13 +195,16 @@ timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 # Define file paths
 file_path_1 = f"data/u_field_1_{timestamp}.npy"
 file_path_2 = f"data/u_field_2_{timestamp}.npy"
+file_path_3 = f"data/u_d_{timestamp}.npy"
 
 # Save final field states
 np.save(file_path_1, u_field_1)
 np.save(file_path_2, u_field_2)
+np.save(file_path_3, u_d)
 
 print(f"Saved u_field_1 to {file_path_1}")
 print(f"Saved u_field_2 to {file_path_2}")
+print(f"Saved u_d to {file_path_3}")
 
 if save_video:
     writer.finish()
