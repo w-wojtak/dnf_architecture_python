@@ -45,7 +45,7 @@ line3_field = line4_field = None
 # Default to trial 1 if not provided
 trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
-plot_fields = True
+plot_fields = False
 
 plot_every = 5    # update plot every x time steps
 plot_delay = 0.05   # delay (in seconds) before each plot update
@@ -160,11 +160,11 @@ try:
         h_u_sim = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
     else:
-        data_dir = Path(os.getcwd()) / 'dnf_architecture_extended/data'
+        data_dir = Path(os.getcwd()) / 'data'
         print(f"Loading h_amem from {data_dir}")
 
         latest_h_amem_file, _ = find_latest_file_with_prefix(
-            data_dir, "h_amem_")
+            data_dir, "h_u_amem_")
         latest_h_amem = np.load(latest_h_amem_file, allow_pickle=True)
 
         u_act = u_field_1.flatten() - h_d_initial + 1.5 + latest_h_amem
@@ -439,8 +439,19 @@ for i in range(len(t)):
         #     writer.grab_frame()
 
 
+# Get current date and time
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+# Define file paths
+file_path_1 = f"data/h_u_amem_{timestamp}.npy"
+
+# Save final h_u_amem
+np.save(file_path_1, h_u_amem)
+print(f"Saved h_u_amem to {file_path_1}")
+
+
 plt.figure(figsize=(10, 4))
-plt.plot(x, h_u_amem, label='hamem')
+plt.plot(x, h_u_amem, label='h_u_amem')
 # plt.plot(x, u_act, label='act', linestyle='--')
 plt.xlabel('x')
 plt.ylabel(' value')
