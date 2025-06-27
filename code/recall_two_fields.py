@@ -45,7 +45,7 @@ line3_field = line4_field = None
 # Default to trial 1 if not provided
 trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
-plot_fields = False
+plot_fields = True
 
 plot_every = 5    # update plot every x time steps
 plot_delay = 0.05   # delay (in seconds) before each plot update
@@ -113,7 +113,7 @@ u_d = np.load(file3)
 
 input_flag = True
 input_shape = [3, 1.5]   # same for both
-input_duration = [2, 2, 2, 2, 2]  # same for both
+input_duration = [5, 5, 5, 5, 5]  # same for both
 
 # Positions for input set 1
 input_position_1 = [-60, -30, 0, 30, 60]
@@ -391,17 +391,19 @@ for i in range(len(t)):
     u_f2_values_at_positions = [u_f2[idx] for idx in input_indices]
     u_f2_history.append(u_f2_values_at_positions)
 
+    # TODO: MAKE INPUT LAST LONGER, UNTIL DELETED
     # --- Detect threshold crossing ---
     for idx, pos in zip(input_indices, input_positions):
         if not threshold_crossed[pos] and u_act[idx] > theta_act:
             print(f"Threshold crossed at position {pos} and time {i*dt}")
             threshold_crossed[pos] = True
 
-            time_on = i
-            time_off = i + 50  # 10 time steps duration
+            time_on = i + 20
+            time_off = len(t)  # ACTIVE TILL THE END OR UNTIL OVERWRITTEN
             gaussian = gaussian_amplitude * \
                 np.exp(-((x - pos) ** 2) / (2 * gaussian_width ** 2))
             input_agent_robot_feedback[time_on:time_off, :] += gaussian
+            # IF LAST EVENT:
             # print(
             #     f"Max of input_agent_robot_feedback: {max(input_agent_robot_feedback[i, :])}")
 
@@ -418,7 +420,7 @@ for i in range(len(t)):
         axs[1, 0].set_title(f"Field u_f1 - Time = {i}")
         axs[1, 1].set_title(f"Field u_f2 - Time = {i}")
 
-        plt.pause(0.1)
+        plt.pause(0.25)
 
         # # Update field 1
         # line1_field.set_ydata(u_act)
