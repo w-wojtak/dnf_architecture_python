@@ -243,7 +243,7 @@ u_error_history = []
 
 # Adaptation memory field
 h_u_amem = np.zeros(np.shape(x))
-beta_adapt = 0.01
+beta_adapt = 0.001
 
 
 if plot_fields:

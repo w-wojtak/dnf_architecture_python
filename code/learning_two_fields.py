@@ -62,6 +62,8 @@ plot_delay = 0.05   # delay (in seconds) before each plot update
 x = np.arange(-x_lim, x_lim + dx, dx)
 t = np.arange(0, t_lim + dt, dt)
 
+input_indices_1 = [np.argmin(np.abs(x - pos)) for pos in input_position_1]
+
 inputs_1 = get_inputs(x, t, dt, input_pars_1, input_flag)
 inputs_2 = get_inputs(x, t, dt, input_pars_2, input_flag)
 
@@ -124,6 +126,8 @@ if save_video:
 # ====================================
 
 # time_counter = 0.0
+u_1_tc = []
+u_2_tc = []
 
 for i in range(len(t)):
 
@@ -154,6 +158,12 @@ for i in range(len(t)):
     h_u_d += dt / tau_h_d * f_d
     u_d += dt * (-u_d + conv_d + input_d + h_u_d)
     history_u_d[i, :] = u_d
+
+    u_1_values = [u_field_1[idx] for idx in input_indices_1]
+    u_2_values = [u_field_2[idx] for idx in input_indices_1]
+
+    u_1_tc.append(u_1_values)
+    u_2_tc.append(u_2_values)
 
     # time_counter += dt
 
@@ -210,4 +220,32 @@ if save_video:
     writer.finish()
 
 plt.ioff()
+plt.show()
+
+
+u_f1_history = np.array(u_1_tc)
+u_f2_history = np.array(u_2_tc)
+
+timesteps = np.arange(len(u_f1_history))
+
+fig, axs = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+
+# Plot u_field_1
+for i, pos in enumerate(input_position_1):
+    axs[0].plot(timesteps, u_f1_history[:, i], label=f'x = {pos}')
+axs[0].set_ylabel('u_field_1')
+axs[0].set_ylim(-1, 5)  # Adjust if needed
+axs[0].legend()
+axs[0].grid(True)
+
+# Plot u_field_2
+for i, pos in enumerate(input_position_1):
+    axs[1].plot(timesteps, u_f2_history[:, i], label=f'x = {pos}')
+axs[1].set_ylabel('u_field_2')
+axs[1].set_xlabel('Timestep')
+axs[1].set_ylim(-1, 5)
+axs[1].legend()
+axs[1].grid(True)
+
+plt.tight_layout()
 plt.show()
