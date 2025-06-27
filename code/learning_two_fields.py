@@ -233,14 +233,16 @@ fig, axs = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
 # Plot u_field_1
 for i, pos in enumerate(input_position_1):
     axs[0].plot(timesteps, u_f1_history[:, i], label=f'x = {pos}')
+axs[0].axhline(theta, color='r', linestyle='--', label='theta = 1')
 axs[0].set_ylabel('u_field_1')
-axs[0].set_ylim(-1, 5)  # Adjust if needed
+axs[0].set_ylim(-1, 5)
 axs[0].legend()
 axs[0].grid(True)
 
 # Plot u_field_2
 for i, pos in enumerate(input_position_1):
     axs[1].plot(timesteps, u_f2_history[:, i], label=f'x = {pos}')
+axs[1].axhline(theta, color='r', linestyle='--', label='theta = 1')
 axs[1].set_ylabel('u_field_2')
 axs[1].set_xlabel('Timestep')
 axs[1].set_ylim(-1, 5)
