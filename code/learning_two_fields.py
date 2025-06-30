@@ -232,6 +232,24 @@ u_d_history = np.array(u_d_tc)
 
 timesteps = np.arange(len(u_f1_history))
 
+# For u_f1_history and u_f2_history: shape (timesteps, positions)
+for i, pos in enumerate(input_position_1):
+    crossing_idx = np.argmax(u_f1_history[:, i] >= theta)
+    print(f"u_field_1 at x={pos} crosses theta at time {crossing_idx*dt}")
+
+print(" ")
+
+for i, pos in enumerate(input_position_1):
+    crossing_idx = np.argmax(u_f2_history[:, i] >= theta)
+    print(f"u_field_2 at x={pos} crosses theta at time {crossing_idx*dt}")
+
+print(" ")
+
+# For u_d_history: shape (timesteps,)
+crossing_idx = np.argmax(u_d_history >= theta)
+print(f"u_d at x=0 crosses theta at time {crossing_idx*dt}")
+
+
 fig, axs = plt.subplots(3, 1, figsize=(12, 8), sharex=False)
 
 # Plot u_field_1
