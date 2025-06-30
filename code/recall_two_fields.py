@@ -47,7 +47,7 @@ trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
 # Define input_onset_time_2 values for different trials
 input_onset_time_by_trial = {
-    1: [8, 12, 16, 26, 30],   # Default
+    1: [18, 22, 26, 36, 40],   # Default
     2: [10, 14, 20, 28, 32],  # Example for trial 2
     3: [5, 15, 25, 35, 45],   # You can add more if needed
 }
@@ -73,7 +73,7 @@ kernel_pars_error = [1.5, 0.8, 0.0]  # same as in act
 
 x_lim, t_lim = 80, 50
 dx, dt = 0.1, 0.1
-theta = 1
+# theta = 1
 
 # x = np.linspace(-x_lim, x_lim, 200)
 x = np.arange(-x_lim, x_lim + dx, dx)
@@ -484,7 +484,7 @@ u_f2_history = np.array(u_f2_history)
 timesteps = np.arange(len(u_act_history))
 
 # Set up figure with 5 subplots
-fig, axs = plt.subplots(5, 1, figsize=(10, 14), sharex=True)
+fig, axs = plt.subplots(5, 1, figsize=(10, 14), sharex=False)
 
 field_histories = [
     (u_act_history, 'u_act'),

@@ -29,7 +29,7 @@ h_0 = 0
 
 h_0_d = 0
 tau_h_d = 20
-theta_d = 1.5
+# theta_d = 1.5
 # kernel_pars_d = [1, 0.7, 0.9]  # SAME as kernel_pars
 
 input_flag = True
@@ -38,11 +38,11 @@ input_duration = [1, 1, 1, 1, 1]  # same for both
 
 # Positions for input set 1
 input_position_1 = [-60, -30, 0, 30, 60]
-input_onset_time_1 = [3, 8, 12, 16, 20]
+input_onset_time_1 = [13, 18, 22, 26, 30]
 
 # Positions for input set 2
 input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
-input_onset_time_2 = [5, 10, 14, 18, 23]
+input_onset_time_2 = [15, 20, 24, 28, 33]
 
 # Pack parameters for each input set
 input_pars_1 = [input_shape, input_position_1,
@@ -128,6 +128,7 @@ if save_video:
 # time_counter = 0.0
 u_1_tc = []
 u_2_tc = []
+u_d_tc = []
 
 for i in range(len(t)):
 
@@ -161,9 +162,11 @@ for i in range(len(t)):
 
     u_1_values = [u_field_1[idx] for idx in input_indices_1]
     u_2_values = [u_field_2[idx] for idx in input_indices_1]
+    u_d_value = u_d[int(len(x) / 2)]
 
     u_1_tc.append(u_1_values)
     u_2_tc.append(u_2_values)
+    u_d_tc.append(u_d_value)
 
     # time_counter += dt
 
@@ -225,10 +228,11 @@ plt.show()
 
 u_f1_history = np.array(u_1_tc)
 u_f2_history = np.array(u_2_tc)
+u_d_history = np.array(u_d_tc)
 
 timesteps = np.arange(len(u_f1_history))
 
-fig, axs = plt.subplots(2, 1, figsize=(10, 8), sharex=True)
+fig, axs = plt.subplots(3, 1, figsize=(12, 8), sharex=False)
 
 # Plot u_field_1
 for i, pos in enumerate(input_position_1):
@@ -248,6 +252,17 @@ axs[1].set_xlabel('Timestep')
 axs[1].set_ylim(-1, 5)
 axs[1].legend()
 axs[1].grid(True)
+
+# Plot u_d
+# for i, pos in enumerate([0]):
+axs[2].plot(timesteps, u_d_history, label='x = 0')
+axs[2].axhline(theta, color='r', linestyle='--', label='theta = 1')
+axs[2].set_ylabel('u_d')
+axs[2].set_xlabel('Timestep')
+axs[2].set_ylim(-1, 3)
+axs[2].set_xlim(0, 100)
+axs[2].legend()
+axs[2].grid(True)
 
 plt.tight_layout()
 plt.show()
