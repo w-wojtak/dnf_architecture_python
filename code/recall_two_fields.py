@@ -45,7 +45,7 @@ line3_field = line4_field = None
 # Default to trial 1 if not provided
 trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
-plot_fields = True
+plot_fields = False
 
 plot_every = 5    # update plot every x time steps
 plot_delay = 0.05   # delay (in seconds) before each plot update
@@ -54,7 +54,7 @@ plot_delay = 0.05   # delay (in seconds) before each plot update
 # --------- Parameters ---------------
 # ====================================
 
-kernel_pars_act = [1.5, 0.8, 0.0]  # ok
+kernel_pars_act = [1.5, 0.8, 0.1]  # ok ADDED INHIBITION 0.5
 kernel_pars_sim = [1.7, 0.8, 0.7]  # ok
 kernel_pars_wm = [1.75, 0.5, 0.8]  # ok
 kernel_pars_f = [1.5, 0.8, 0.0]  # same as in act
@@ -121,7 +121,7 @@ input_onset_time_1 = [3, 8, 12, 16, 20]
 
 # Positions for input set 2
 input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
-input_onset_time_2 = [5, 10, 14, 20, 24]
+input_onset_time_2 = [8, 12, 16, 26, 30]
 
 # Pack parameters for each input set
 input_pars_1 = [input_shape, input_position_1,
@@ -398,7 +398,7 @@ for i in range(len(t)):
             print(f"Threshold crossed at position {pos} and time {i*dt}")
             threshold_crossed[pos] = True
 
-            time_on = i + 20
+            time_on = i + 20   # HOW LONG MAKE THE DELAY?
             time_off = len(t)  # ACTIVE TILL THE END OR UNTIL OVERWRITTEN
             gaussian = gaussian_amplitude * \
                 np.exp(-((x - pos) ** 2) / (2 * gaussian_width ** 2))
@@ -452,15 +452,15 @@ np.save(file_path_1, h_u_amem)
 print(f"Saved h_u_amem to {file_path_1}")
 
 
-plt.figure(figsize=(10, 4))
-plt.plot(x, h_u_amem, label='h_u_amem')
-# plt.plot(x, u_act, label='act', linestyle='--')
-plt.xlabel('x')
-plt.ylabel(' value')
-plt.legend()
-plt.grid(True)
-plt.tight_layout()
-plt.show()
+# plt.figure(figsize=(10, 4))
+# plt.plot(x, h_u_amem, label='h_u_amem')
+# # plt.plot(x, u_act, label='act', linestyle='--')
+# plt.xlabel('x')
+# plt.ylabel(' value')
+# plt.legend()
+# plt.grid(True)
+# plt.tight_layout()
+# plt.show()
 
 
 # Convert history lists to NumPy arrays
@@ -490,7 +490,7 @@ for ax, (field_hist, name) in zip(axs, field_histories):
     ax.set_ylabel(name)
     # Custom y-limits
     if name == 'u_wm':
-        ax.set_ylim(-2, 15)
+        ax.set_ylim(-2, 25)
     else:
         ax.set_ylim(-2, 5)
     ax.legend()
