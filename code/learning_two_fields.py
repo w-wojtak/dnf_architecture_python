@@ -20,7 +20,7 @@ fig = axs = line1_field = line1_input = line2_field = line2_input = line1_ud = N
 
 kernel_pars = [1, 0.7, 0.9]
 
-x_lim, t_lim = 80, 50
+x_lim, t_lim = 80, 60
 dx, dt = 0.1, 0.1
 theta = 1
 
@@ -38,11 +38,11 @@ input_duration = [1, 1, 1, 1, 1]  # same for both
 
 # Positions for input set 1
 input_position_1 = [-60, -30, 0, 30, 60]
-input_onset_time_1 = [13, 18, 22, 26, 30]
+input_onset_time_1 = [9, 20, 28, 35, 40]
 
 # Positions for input set 2
 input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
-input_onset_time_2 = [15, 20, 24, 28, 33]
+input_onset_time_2 = [6, 18, 30, 34, 42]
 
 # Pack parameters for each input set
 input_pars_1 = [input_shape, input_position_1,

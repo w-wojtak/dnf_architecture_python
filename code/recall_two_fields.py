@@ -42,14 +42,16 @@ fig = axs = line1_field = line1_input = line2_field = line2_input = line1_ud = N
 line3_field = line4_field = None
 
 
+beta_adapt = 0.0055
+
 # Default to trial 1 if not provided
 trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
 # Define input_onset_time_2 values for different trials
 input_onset_time_by_trial = {
-    1: [18, 22, 26, 36, 40],   # Default
-    2: [10, 14, 20, 28, 32],  # Example for trial 2
-    3: [5, 15, 25, 35, 45],   # You can add more if needed
+    1: [8, 19, 28, 38, 48],   # Default
+    2: [8, 16, 20, 28, 32],  # Example for trial 2
+    3: [8, 15, 25, 35, 45],   # You can add more if needed
 }
 
 # Use the provided value if available, else fallback to default
@@ -71,7 +73,7 @@ kernel_pars_wm = [1.75, 0.5, 0.8]  # ok
 kernel_pars_f = [1.5, 0.8, 0.0]  # same as in act
 kernel_pars_error = [1.5, 0.8, 0.0]  # same as in act
 
-x_lim, t_lim = 80, 50
+x_lim, t_lim = 80, 60
 dx, dt = 0.1, 0.1
 # theta = 1
 
@@ -178,8 +180,8 @@ try:
             data_dir, "h_u_amem_")
         latest_h_amem = np.load(latest_h_amem_file, allow_pickle=True)
 
-        u_act = u_field_1.flatten() - h_d_initial + 1.5 + latest_h_amem
-        input_action_onset = u_field_1.flatten() + latest_h_amem
+        u_act = u_field_1.flatten() - h_d_initial + 1.5 - latest_h_amem
+        input_action_onset = u_field_1.flatten() - latest_h_amem
         h_u_act = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
         # Use u_field_2 for u_sim (CHECK!!!!)
@@ -254,7 +256,6 @@ u_error_history = []
 
 # Adaptation memory field
 h_u_amem = np.zeros(np.shape(x))
-beta_adapt = 0.001
 
 
 if plot_fields:
@@ -463,15 +464,15 @@ np.save(file_path_1, h_u_amem)
 print(f"Saved h_u_amem to {file_path_1}")
 
 
-# plt.figure(figsize=(10, 4))
-# plt.plot(x, h_u_amem, label='h_u_amem')
-# # plt.plot(x, u_act, label='act', linestyle='--')
-# plt.xlabel('x')
-# plt.ylabel(' value')
-# plt.legend()
-# plt.grid(True)
-# plt.tight_layout()
-# plt.show()
+plt.figure(figsize=(10, 4))
+plt.plot(x, h_u_amem, label='h_u_amem')
+# plt.plot(x, u_act, label='act', linestyle='--')
+plt.xlabel('x')
+plt.ylabel(' value')
+plt.legend()
+plt.grid(True)
+plt.tight_layout()
+plt.show()
 
 
 # Convert history lists to NumPy arrays
