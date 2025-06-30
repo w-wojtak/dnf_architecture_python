@@ -45,6 +45,17 @@ line3_field = line4_field = None
 # Default to trial 1 if not provided
 trial_number = int(sys.argv[1]) if len(sys.argv) > 1 else 1
 
+# Define input_onset_time_2 values for different trials
+input_onset_time_by_trial = {
+    1: [8, 12, 16, 26, 30],   # Default
+    2: [10, 14, 20, 28, 32],  # Example for trial 2
+    3: [5, 15, 25, 35, 45],   # You can add more if needed
+}
+
+# Use the provided value if available, else fallback to default
+input_onset_time_2 = input_onset_time_by_trial.get(
+    trial_number, input_onset_time_by_trial[1])
+
 plot_fields = False
 
 plot_every = 5    # update plot every x time steps
@@ -121,7 +132,7 @@ input_onset_time_1 = [3, 8, 12, 16, 20]
 
 # Positions for input set 2
 input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
-input_onset_time_2 = [8, 12, 16, 26, 30]
+# input_onset_time_2 = [8, 12, 16, 26, 30]
 
 # Pack parameters for each input set
 input_pars_1 = [input_shape, input_position_1,
