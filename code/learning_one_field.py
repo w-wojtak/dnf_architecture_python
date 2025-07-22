@@ -31,7 +31,7 @@ def get_inputs(x, t, dt, input_pars, input_flag):
 
 kernel_pars = [1, 0.7, 0.9]
 
-x_lim, t_lim = 80, 100
+x_lim, t_lim = 80, 30
 dx, dt = 0.05, 0.05
 theta = 1
 
@@ -45,9 +45,9 @@ input_onset_time = [3, 8, 12, 16, 20]
 input_duration = [1, 1, 1, 1, 1]
 input_pars = [input_shape, input_position, input_onset_time, input_duration]
 
-save_video = False  # Set to True to save video of the simulation
-plot_every = 5    # update plot every 100 time steps
-plot_delay = 0.05   # delay (in seconds) before each plot update
+save_video = True  # Set to True to save video of the simulation
+plot_every = 2    # update plot every 100 time steps
+plot_delay = 0.1   # delay (in seconds) before each plot update
 
 
 # ====================================
@@ -72,12 +72,12 @@ history_u = np.zeros((len(t), len(x)))
 # ====================================
 
 plt.ion()
-fig, ax = plt.subplots(figsize=(8, 4))
+fig, ax = plt.subplots(figsize=(8, 8))
 
 line1, = ax.plot(x, u_field, label='Field activity u(x)')
 line2, = ax.plot(x, inputs[0, :], label='Input')
 
-ax.set_ylim(-2, 10)
+ax.set_ylim(-1, 5)
 ax.set_xlabel("x")
 ax.set_ylabel("activity")
 ax.legend()
