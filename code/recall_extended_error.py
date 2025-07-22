@@ -137,7 +137,7 @@ input_position_1 = [-60, -30, 0, 30, 60]
 input_onset_time_1 = [3, 8, 12, 16, 20]
 
 # Positions for input set 2
-input_position_2 = input_position_1  # [-50, -30, 10, 35, 65]
+input_position_2 = [-60, 0, -30, 0, 30, 60]
 # input_onset_time_2 = [8, 12, 16, 26, 30]
 
 # Pack parameters for each input set
@@ -402,8 +402,8 @@ for i in range(len(t)):
     u_act += dt * (-u_act + conv_act + input_action_onset +
                    h_u_act - 6.0 * f_wm * conv_wm)
 
-    u_sim += dt * (-u_sim + conv_sim + input_action_onset_2 +
-                   h_u_sim - 6.0 * f_wm * conv_wm)
+    u_sim += (dt/3) * (-u_sim + conv_sim + input_action_onset_2 +
+                       h_u_sim - 6.0 * f_wm * conv_wm)
 
     u_wm += (dt/1.25) * (-u_wm + conv_wm +
                          8 * ((f_f1 * u_f1) * (f_f2 * u_f2)) + h_u_wm)
