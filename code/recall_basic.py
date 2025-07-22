@@ -98,19 +98,19 @@ t = np.arange(0, t_lim + dt, dt)
 # plt.tight_layout()
 # plt.show()
 
-folder = "data"
+folder = "/home/wwojtak/dnf_architecture_python/data_basic"
 
 file1, ts1 = find_latest_file_with_prefix(folder, "u_field_1_")
-file2, ts2 = find_latest_file_with_prefix(folder, "u_field_2_")
+# file2, ts2 = find_latest_file_with_prefix(folder, "u_field_2_")
 file3, ts3 = find_latest_file_with_prefix(folder, "u_d_")
 
 # Optional: check if all timestamps match
-if not (ts1 == ts2 == ts3):
+if not (ts1 == ts3):
     raise ValueError("Timestamps do not match across all files.")
 
 # Load data
 u_field_1 = np.load(file1)
-u_field_2 = np.load(file2)
+# u_field_2 = np.load(file2)
 u_d = np.load(file3)
 
 f_test = np.heaviside(u_field_1 - 1.5, 1)
@@ -174,14 +174,14 @@ try:
         h_u_act = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
         # Use u_field_2 for u_sim
-        u_sim = u_field_2.flatten() - h_d_initial + 1.5
-        input_action_onset_2 = u_field_2.flatten()
+        u_sim = u_field_1.flatten() - h_d_initial + 1.5
+        input_action_onset_2 = u_field_1.flatten()
         h_u_sim = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
     else:
         # TODO: save and load last memory PLUS h_amem
         # now it's loading original memory so the timng is wrong
-        data_dir = Path(os.getcwd()) / 'data'
+        data_dir = "/home/wwojtak/dnf_architecture_python/data_basic"
         print(f"Loading h_amem from {data_dir}")
 
         latest_h_amem_file, _ = find_latest_file_with_prefix(
@@ -201,8 +201,8 @@ try:
         h_u_act = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
         # Use u_field_2 for u_sim (CHECK!!!!)
-        u_sim = u_field_2.flatten() - h_d_initial + 1.5
-        input_action_onset_2 = u_field_2.flatten()
+        u_sim = u_field_1.flatten() - h_d_initial + 1.5
+        input_action_onset_2 = u_field_1.flatten()
         h_u_sim = -h_d_initial * np.ones(np.shape(x)) + 1.5
 
 except FileNotFoundError:
@@ -505,7 +505,7 @@ if trial_number > 1:
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # Define file paths
-file_path_1 = f"data/h_u_amem_{timestamp}.npy"
+file_path_1 = f"/home/wwojtak/dnf_architecture_python/data_basic/h_u_amem_{timestamp}.npy"
 
 # Save final h_u_amem
 np.save(file_path_1, h_u_amem)

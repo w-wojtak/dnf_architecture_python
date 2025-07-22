@@ -161,14 +161,14 @@ print(f"Max of u_d: {max(u_d)}")
 # ====================================
 
 # Create data folder if it doesn't exist
-os.makedirs("data", exist_ok=True)
+os.makedirs("/home/wwojtak/dnf_architecture_python/data_basic", exist_ok=True)
 
 # Get current date and time
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 # # Define file paths
-file_path_1 = f"data_basic/u_field_1_{timestamp}.npy"
-file_path_2 = f"data_basic/u_d_{timestamp}.npy"
+file_path_1 = f"/home/wwojtak/dnf_architecture_python/data_basic/u_field_1_{timestamp}.npy"
+file_path_2 = f"/home/wwojtak/dnf_architecture_python/data_basic/u_d_{timestamp}.npy"
 
 # Save final field states
 np.save(file_path_1, u_field_1)
