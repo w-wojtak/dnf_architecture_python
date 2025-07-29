@@ -4,4 +4,6 @@ Run `learning_demo.py` to see an example of sequence learning in a neural field.
 
 Due to local threshold accommodation at the bump locations, the bumps grow in amplitude over time. This leads to the formation of an activation gradient, where the largest bump corresponds to the first input, followed by progressively smaller bumps for later inputs (see Figure below).
 
-![ Activation gradient in a neural field. Earlier inputs produce higher bumps due to local threshold adaptation.](images/learning_example.png)
+<!-- ![ Activation gradient in a neural field. Earlier inputs produce higher bumps due to local threshold adaptation.](images/learning_example.png) -->
+
+<img src="images/learning_example.png" alt="Activation gradient in a neural field. Earlier inputs produce higher bumps due to local threshold adaptation." width="400"/>
