@@ -45,7 +45,7 @@ input_onset_time = [3, 8, 12, 16, 20]
 input_duration = [1, 1, 1, 1, 1]
 input_pars = [input_shape, input_position, input_onset_time, input_duration]
 
-save_video = True  # Set to True to save video of the simulation
+save_video = False  # Set to True to save video of the simulation
 plot_every = 2    # update plot every 100 time steps
 plot_delay = 0.1   # delay (in seconds) before each plot update
 

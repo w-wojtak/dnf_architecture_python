@@ -58,7 +58,7 @@ input_onset_time_by_trial = {
 input_onset_time_2 = input_onset_time_by_trial.get(
     trial_number, input_onset_time_by_trial[1])
 
-plot_fields = False
+plot_fields = True
 
 plot_every = 5    # update plot every x time steps
 plot_delay = 0.05   # delay (in seconds) before each plot update
