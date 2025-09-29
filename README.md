@@ -38,3 +38,18 @@ From the project root (`dnf_architecture_python/`), run:
 python -m scenarios.learning_basic
 python -m scenarios.recall_basic
 ```
+
+### Running Combined Experiments
+
+Some scripts orchestrate multiple scenario runs, for example:
+
+`main_experiment.py` → runs learning_basic.py once, then recall_basic.py multiple times.
+
+`main_experiment_extended.py` → runs learning_extended.py once, then recall_extended.py multiple times.
+
+
+Run them from the project root:
+```
+python -m scenarios.main_experiment
+python -m scenarios.main_experiment_extended
+```
