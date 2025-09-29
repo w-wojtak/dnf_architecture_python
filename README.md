@@ -23,3 +23,18 @@ implements temporal adaptation
 
 
 dnf architecture- extended
+
+
+
+## Running Scenarios
+
+Each experiment scenario is a script in the `scenarios/` folder (e.g., `learning_basic.py`, `recall_basic.py`).  
+These scripts import shared code from `src/`, so you need to run them **from the project root**.
+ 
+
+From the project root (`dnf_architecture_python/`), run:
+
+```bash
+python -m scenarios.learning_basic
+python -m scenarios.recall_basic
+```
